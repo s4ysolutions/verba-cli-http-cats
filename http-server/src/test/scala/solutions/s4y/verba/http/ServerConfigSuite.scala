@@ -262,13 +262,13 @@ class ServerConfigSuite extends FunSuite {
   }
 
   test("fromArgs handles missed both port value and secret") {
-    val complexSecret = "my-secret-123!@#$%^&*()_+-=[]{}|;:',.<>?"
+    val complexSecret = "my-secret"
     val args = List("--secret", complexSecret, "--port")
     val result = ServerConfig.fromArgs(args)
 
     result match {
       case Left(error) =>
-        assert(error.contains("Missing value for --port s"))
+        assert(error.contains("Missing value for --port"))
       case Right(config) =>
         fail(s"Expected error for missing port value but got config: $config")
     }

@@ -32,14 +32,14 @@ Native executable http server:
 
 ```shell
 sbt httpServerNative/nativeLink
-./http-server/.native/target/scala-3.3.7/http-server-out 
+./http-server/.native/target/scala-3.3.7/http-server-out --secret token-expected-as-bearer
 ```
 
 JVM executable http server:
 
 ```shell
 sbt httpServerJVM/assembly
-java -jar http-server/.jvm/target/scala-3.3.7/http-server-assembly-0.1.0-SNAPSHOT.jar
+java -jar http-server/.jvm/target/scala-3.3.7/http-server-assembly-0.1.0-SNAPSHOT.jar --help
 ````
 
 Native executable CLI tool:

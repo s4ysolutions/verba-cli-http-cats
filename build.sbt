@@ -73,7 +73,8 @@ lazy val httpServer = crossProject(JVMPlatform, NativePlatform)
     libraryDependencies ++= Seq(
       "org.http4s" %%% "http4s-ember-server" % http4sVersion,
       "org.http4s" %%% "http4s-dsl" % http4sVersion,
-      "org.scalameta" %% "munit" % "1.2.1" % Test
+      "org.scalameta" %% "munit" % "1.2.1" % Test,
+      "org.typelevel" %% "munit-cats-effect" % "2.1.0" % Test
     )
   )
   .jvmSettings(

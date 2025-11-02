@@ -8,6 +8,7 @@ import org.http4s.server.middleware.Logger as RequestLogger
 import scribe.cats.LoggerExtras
 import solutions.s4y.verba.adapters.{GeminiRepository, OpenAIRepository}
 import solutions.s4y.verba.http.endpoints.translation.translationEndpoint
+import solutions.s4y.verba.http.middleware.AuthMiddleware
 import solutions.s4y.verba.scribe.ScribeLogger
 import solutions.s4y.verba.usecases.TranslatorService
 
@@ -19,18 +20,23 @@ object Main extends IOApp {
     TranslatorService(OpenAIRepository(), GeminiRepository())
 
   def run(args: List[String]): IO[ExitCode] = {
-    def translationApp: HttpApp[IO] =
-      RequestLogger.httpApp(
-        logHeaders = true,
-        logBody = false,
-        redactHeadersWhen = _ => false,
-        logAction = Some((msg: String) => httpLogger.info(msg))
-      )(translationEndpoint(translatorService).orNotFound)
 
     ServerConfig.fromArgs(args) match {
       case Left(error) =>
         IO.println(error).as(ExitCode.Error)
       case Right(config) =>
+        val authenticatedRoutes: HttpRoutes[IO] = AuthMiddleware(config.secret)(
+          translationEndpoint(translatorService)
+        )
+
+        val translationApp: HttpApp[IO] =
+          RequestLogger.httpApp(
+            logHeaders = true,
+            logBody = false,
+            redactHeadersWhen = _ => false,
+            logAction = Some((msg: String) => httpLogger.info(msg))
+          )(authenticatedRoutes.orNotFound)
+
         httpLogger.info(
           s"Starting server on ${config.host}:${config.port}"
         ) *>
