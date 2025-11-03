@@ -49,7 +49,7 @@ lazy val cli = crossProject(JVMPlatform, NativePlatform)
   .jvmSettings(
     libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.5.20",
     assemblyMergeStrategy := {
-      case "module-info.class"           => MergeStrategy.discard
+      case "module-info.class"      => MergeStrategy.discard
       case PathList("META-INF", _*) =>
         MergeStrategy.discard // Handles other common META-INF conflicts
       case x => (assemblyMergeStrategy.value)(x) // Fallback to default
@@ -78,5 +78,11 @@ lazy val httpServer = crossProject(JVMPlatform, NativePlatform)
     )
   )
   .jvmSettings(
-    libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.5.20"
+    libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.5.20",
+    assemblyMergeStrategy := {
+      case "module-info.class"      => MergeStrategy.discard
+      case PathList("META-INF", _*) =>
+        MergeStrategy.discard // Handles other common META-INF conflicts
+      case x => (assemblyMergeStrategy.value)(x) // Fallback to default
+    }
   )
