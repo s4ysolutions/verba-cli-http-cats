@@ -79,6 +79,7 @@ lazy val httpServer = crossProject(JVMPlatform, NativePlatform)
     )
   )
   .jvmSettings(
+    Compile / mainClass := Some("solutions.s4y.verba.http.Main"),
     libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.5.20",
     assemblyMergeStrategy := {
       case "module-info.class"      => MergeStrategy.discard
@@ -86,4 +87,7 @@ lazy val httpServer = crossProject(JVMPlatform, NativePlatform)
         MergeStrategy.discard // Handles other common META-INF conflicts
       case x => assemblyMergeStrategy.value(x) // Fallback to default
     }
+  )
+  .nativeSettings(
+    libraryDependencies += "org.scodec" % "scodec-bits_native0.4_3" % "1.1.38"
   )

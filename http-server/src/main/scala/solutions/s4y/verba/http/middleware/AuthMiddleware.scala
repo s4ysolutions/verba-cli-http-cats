@@ -5,12 +5,10 @@ import cats.effect.IO
 import org.http4s.*
 import org.http4s.dsl.io.*
 import org.http4s.headers.Authorization
-import scribe.Scribe
 import scribe.cats.LoggerExtras
+import scribe.{Logger, Scribe}
 
-import java.security.MessageDigest
 import java.time.Instant
-import java.util.Base64
 import java.util.concurrent.ConcurrentHashMap
 import scala.jdk.CollectionConverters.*
 
@@ -18,6 +16,9 @@ object AuthMiddleware:
 
   def apply(secret: String)(routes: HttpRoutes[IO]): HttpRoutes[IO] = Kleisli {
     (req: Request[IO]) =>
+      logger.debug(
+        "Authenticating request to " + s"${req.method} ${req.uri.path}"
+      )
       val authHeader =
         req.headers.get[Authorization].map(_.credentials.renderString)
 
@@ -26,14 +27,14 @@ object AuthMiddleware:
           routes(req)
         case Some(_) =>
           OptionT.liftF(
-            logger.warn(
+            loggerIO.warn(
               s"Unauthorized request to ${req.method} ${req.uri.path}"
             ) *>
               Forbidden("Invalid authentication token")
           )
         case None =>
           OptionT.liftF(
-            logger.warn(
+            loggerIO.warn(
               s"Missing authentication header for ${req.method} ${req.uri.path}"
             ) *>
               Forbidden("Missing authentication header")
@@ -63,6 +64,10 @@ object AuthMiddleware:
 
     authHeader match {
       case wssePattern(username, digest, nonce, created) =>
+        logger.debug(
+          "Parsed WSSE header successfully: " +
+            s"username=$username, nonce=$nonce, created=$created"
+        )
         try {
           // Parse the created timestamp
           val createdInstant = Instant.parse(created)
@@ -84,11 +89,12 @@ object AuthMiddleware:
           }
 
           // Calculate expected digest: Base64(SHA-256(Nonce + Created + Secret))
-          val expectedDigest = Base64.getEncoder.encodeToString(
+          val expectedDigest = hasher.sha256Base64(nonce + created + secret)
+          /*Base64.getEncoder.encodeToString(
             MessageDigest
               .getInstance("SHA-256")
               .digest((nonce + created + secret).getBytes("UTF-8"))
-          )
+          )*/
           // Verify digest matches
           digest == expectedDigest
         } catch {
@@ -102,9 +108,12 @@ object AuthMiddleware:
     }
   end checkWsse
 
+  private val hasher = HashUtil()
+
   // Map to track used nonces with their timestamps
   private val usedNonces: ConcurrentHashMap[String, Long] =
     new ConcurrentHashMap()
 
-  private val logger: Scribe[IO] = scribe.Logger("verba.http.auth").f[IO]
+  private val logger: Logger = scribe.Logger("verba.http.auth")
+  private val loggerIO: Scribe[IO] = logger.f[IO]
 end AuthMiddleware
