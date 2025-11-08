@@ -65,10 +65,11 @@ lazy val httpServer = crossProject(JVMPlatform, NativePlatform)
   .settings(
     name := "http-server",
     nativeConfig ~= { c =>
-      // c.withLTO(LTO.none) // full, thin
-      c.withLTO(LTO.full) // full, thin
+      c.withLTO(LTO.none) // full, thin
+        // c.withLTO(LTO.full) // full, thin
         // .withMode(Mode.debug) // releaseFast, releaseSize, releaseFull
-        .withMode(Mode.releaseFull)
+        // .withMode(Mode.releaseFull)
+        .withMode(Mode.releaseSize)
         .withGC(GC.commix) // commix, immix, boehm, none
       // .withMultithreading(true) // Enable parallelism on Native
     },
