@@ -5,6 +5,7 @@ import cats.effect.IO
 import org.http4s.*
 import org.http4s.dsl.io.*
 import org.http4s.headers.Authorization
+import org.typelevel.ci.CIStringSyntax
 import scribe.cats.LoggerExtras
 import scribe.{Logger, Scribe}
 
@@ -50,10 +51,30 @@ object AuthMiddleware:
   end apply
 
   private def isLocal(req: Request[IO]): Boolean =
-    req.remote.exists { sa =>
-      val s = sa.toString
-      s.contains("127.0.0.1") || s.contains("::1") || s.contains("localhost")
-    }
+    // Check X-Forwarded-For header first (set by nginx)
+    val xForwardedFor = req.headers.get(ci"X-Forwarded-For").map(_.head.value)
+    val xRealIp = req.headers.get(ci"X-Real-IP").map(_.head.value)
+
+    val clientIp = xForwardedFor
+      .map(_.split(",").headOption.map(_.trim).getOrElse(""))
+      .orElse(xRealIp)
+      .getOrElse("")
+
+    logger.debug(s"Client IP detected: $clientIp")
+
+    // If we have a forwarded IP, check that instead of req.remote
+    if clientIp.nonEmpty then
+      isLocalAddress(clientIp)
+    else
+      // Fallback to checking req.remote (for direct connections)
+      req.remote.exists { sa =>
+        isLocalAddress(sa.toString)
+      }
+
+  private def isLocalAddress(address: String): Boolean =
+    address.contains("127.0.0.1") ||
+      address.contains("::1") ||
+      address.contains("localhost")
 
   // Purge nonces older than 20 seconds (double the time window for safety)
   private def purgeOldNonces(now: Long): Unit =
