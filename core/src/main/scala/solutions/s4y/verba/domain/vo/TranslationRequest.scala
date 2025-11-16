@@ -8,14 +8,14 @@ import solutions.s4y.verba.domain.errors.{
 }
 
 final case class TranslationRequest private (
-    // sourceText: String,
-    prompt: Prompt,
-    sourceLang: Option[String],
-    targetLang: String,
-    mode: TranslationMode,
-    provider: TranslationProvider,
-    quality: TranslationQuality,
-    ipa: Boolean
+                                              // sourceText: String,
+                                              prompt: Prompt,
+                                              sourceLang: Option[String],
+                                              targetLang: String,
+                                              mode: TranslationMode,
+                                              provider: TranslationProviders,
+                                              quality: TranslationQuality,
+                                              ipa: Boolean
 )
 
 object TranslationRequest:
@@ -82,8 +82,8 @@ object TranslationRequest:
     val vMode: ValidationResult[TranslationMode] =
       TranslationMode.fromString(mode.getOrElse("auto"))
 
-    val vProvider: ValidationResult[TranslationProvider] =
-      TranslationProvider.fromString(provider.getOrElse("gemini"))
+    val vProvider: ValidationResult[TranslationProviders] =
+      TranslationProviders.fromString(provider.getOrElse("gemini"))
 
     val vQuality: ValidationResult[TranslationQuality] =
       TranslationQuality.fromString(quality.getOrElse("optimal"))

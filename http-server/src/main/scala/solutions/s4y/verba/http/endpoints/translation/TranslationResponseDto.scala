@@ -4,5 +4,6 @@ case class TranslationResponseDto(
     text: String,
     promptTokenCount: Int,
     textTokenCount: Int,
-    time: Long
+    time: Long,
+    state: TranslationStateDto
 )

@@ -1,5 +1,6 @@
 package solutions.s4y.verba.usecases
 
+import cats.data.NonEmptySet
 import cats.effect.{IO, Temporal}
 import solutions.s4y.verba.domain.errors.{ApiError, TranslationError}
 import solutions.s4y.verba.domain.vo.*
@@ -17,8 +18,8 @@ class TranslatorService(
       request: TranslationRequest
   ): IO[Either[TranslationError, TranslationResponse]] =
     val repo = request.provider match
-      case TranslationProvider.OpenAI => openAiRepository
-      case TranslationProvider.Gemini => geminiRepository
+      case TranslationProviders.OpenAI => openAiRepository
+      case TranslationProviders.Gemini => geminiRepository
 
     val translationEffect = repo.translate(request)
 
@@ -37,8 +38,15 @@ class TranslatorService(
     )
   end modesSupported
 
-  def providersSupported: IO[Either[Nothing, Set[TranslationProvider]]] =
-    IO.pure(Right(Set(TranslationProvider.OpenAI, TranslationProvider.Gemini)))
+  def providersSupported: IO[Either[Nothing, NonEmptySet[TranslationProvider]]] =
+    IO.pure(
+      Right(
+        NonEmptySet.of(
+          TranslationProviders.OpenAI.provider,
+          TranslationProviders.Gemini.provider
+        )
+      )
+    )
   end providersSupported
 
   def qualitiesSupported: IO[Either[Nothing, Set[TranslationQuality]]] =

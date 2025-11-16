@@ -10,9 +10,8 @@ import org.http4s.dsl.io.*
 import scribe.Logger
 import scribe.cats.LoggerExtras
 import solutions.s4y.verba.domain.vo.TranslationRequest
+import solutions.s4y.verba.http.dto.TranslationProviderDto
 import solutions.s4y.verba.usecases.TranslatorService
-
-import scala.concurrent.duration.Duration
 
 def translationEndpoint(
     translationService: TranslatorService,
@@ -22,6 +21,9 @@ def translationEndpoint(
   HttpRoutes.of[IO] { case req @ POST -> Root / "translation" =>
     val result = for {
       _ <- EitherT.right[String](loggerIO.debug("Received translation request"))
+      providers <- EitherT(translationService.providersSupported)
+        .leftMap((err: Throwable) => err.getMessage)
+      // modes <- EitherT(translationService.modesSupported)
       dto <- EitherT(req.as[TranslationRequestDto].attempt)
         .leftMap((err: Throwable) => err.getMessage)
       _ <- EitherT.right[String](loggerIO.debug(s"Request DTO: $dto"))
@@ -48,7 +50,10 @@ def translationEndpoint(
       translation.text,
       translation.promptTokenCount,
       translation.textTokenCount,
-      durationMs
+      durationMs,
+      TranslationStateDto(
+        providers = providers.toList.map(TranslationProviderDto.fromDomain)
+      )
     )
 
     result.value.flatMap {

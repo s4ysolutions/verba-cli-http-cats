@@ -4,7 +4,7 @@ import munit.FunSuite
 import cats.data.Validated
 import cats.syntax.all.*
 import solutions.s4y.verba.domain.errors.RequestValidationError
-import solutions.s4y.verba.domain.vo.{TranslationMode, TranslationProvider, TranslationQuality, TranslationRequest}
+import solutions.s4y.verba.domain.vo.{TranslationMode, TranslationProviders, TranslationQuality, TranslationRequest}
 
 class TranslationRequestSuite extends FunSuite {
 
@@ -24,7 +24,7 @@ class TranslationRequestSuite extends FunSuite {
         assertEquals(req.sourceLang, "eng")
         assertEquals(req.targetLang, "fra")
         assertEquals(req.mode, TranslationMode.TranslateSentence)
-        assertEquals(req.provider, TranslationProvider.OpenAI)
+        assertEquals(req.provider, TranslationProviders.OpenAI)
         assertEquals(req.quality, TranslationQuality.Optimal)
 
       case Validated.Invalid(errs) =>

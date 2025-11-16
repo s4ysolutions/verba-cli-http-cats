@@ -1,17 +1,12 @@
 package solutions.s4y.verba.domain.vo
 
-import cats.data.ValidatedNec
-import cats.syntax.all.*
-import solutions.s4y.verba.domain.errors.RequestValidationError
+import cats.Order
+import cats.data.NonEmptySet
 
-enum TranslationProvider:
-  case OpenAI
-  case Gemini
+case class TranslationProvider(
+    name: String,
+    qualities: NonEmptySet[TranslationQuality]
+)
 
 object TranslationProvider:
-  def fromString(raw: String): ValidatedNec[RequestValidationError, TranslationProvider] =
-    val normalized = Option(raw).getOrElse("").trim.toLowerCase
-    normalized match
-      case "openai"        => OpenAI.validNec
-      case "google" | "gemini" => Gemini.validNec
-      case _               => RequestValidationError.InvalidProvider(raw).invalidNec
+  given Order[TranslationProvider] = Order.by(_.name)

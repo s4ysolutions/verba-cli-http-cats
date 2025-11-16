@@ -1,5 +1,6 @@
 package solutions.s4y.verba.domain.vo
 
+import cats.Order
 import cats.data.ValidatedNec
 import cats.syntax.all.*
 import solutions.s4y.verba.domain.errors.RequestValidationError
@@ -10,6 +11,8 @@ enum TranslationQuality:
   case Thinking
 
 object TranslationQuality:
+  given Order[TranslationQuality] = Order.by(_.ordinal)
+  
   def fromString(
       raw: String
   ): ValidatedNec[RequestValidationError, TranslationQuality] =
