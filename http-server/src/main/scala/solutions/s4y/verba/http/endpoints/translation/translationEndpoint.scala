@@ -47,9 +47,9 @@ def translationEndpoint(
       endTime <- EitherT.right(Clock[IO].realTimeInstant)
       durationMs = (endTime.toEpochMilli - startTime.toEpochMilli)
     } yield TranslationResponseDto(
-      translation.text,
-      translation.promptTokenCount,
-      translation.textTokenCount,
+      translation.translated,
+      translation.inputTokenCount,
+      translation.outputTokenCount,
       durationMs,
       TranslationStateDto(
         providers = providers.toList.map(TranslationProviderDto.fromDomain)

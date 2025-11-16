@@ -38,7 +38,8 @@ class TranslatorService(
     )
   end modesSupported
 
-  def providersSupported: IO[Either[Nothing, NonEmptySet[TranslationProvider]]] =
+  def providersSupported
+      : IO[Either[Nothing, NonEmptySet[TranslationProvider]]] =
     IO.pure(
       Right(
         NonEmptySet.of(
@@ -79,14 +80,16 @@ class TranslatorService(
       response: TranslationResponse
   ): TranslationResponse =
     val leftTrimmed =
-      response.text.dropWhile(c => c.isWhitespace || extraTrimChars.contains(c))
+      response.translated.dropWhile(c =>
+        c.isWhitespace || extraTrimChars.contains(c)
+      )
 
     TranslationResponse(
       leftTrimmed.reverse
         .dropWhile(c => c.isWhitespace || extraTrimChars.contains(c))
         .reverse,
-      response.promptTokenCount,
-      response.textTokenCount
+      response.inputTokenCount,
+      response.outputTokenCount
     )
 
   private val extraTrimChars: Set[Char] =

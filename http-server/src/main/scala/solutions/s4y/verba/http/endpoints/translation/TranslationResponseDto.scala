@@ -1,9 +1,9 @@
 package solutions.s4y.verba.http.endpoints.translation
 
 case class TranslationResponseDto(
-    text: String,
-    promptTokenCount: Int,
-    textTokenCount: Int,
+    translated: String,
+    inputTokenCount: Int,
+    outputTokenCount: Int,
     time: Long,
     state: TranslationStateDto
 )
