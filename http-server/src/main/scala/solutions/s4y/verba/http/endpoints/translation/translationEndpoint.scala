@@ -39,7 +39,9 @@ def translationEndpoint(
         ).leftMap(err => err.message)
       )
       _ <- EitherT.right[String](
-        loggerIO.debug(s"Translating from ${dto.from} to ${dto.to}")
+        loggerIO.debug(
+          s"Translating from ${dto.from} to ${dto.to}\nPrompt: ${translationReq.prompt.value}"
+        )
       )
       startTime <- EitherT.right(Clock[IO].realTimeInstant)
       translation <- EitherT(translationService.translate(translationReq))
